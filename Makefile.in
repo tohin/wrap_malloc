@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+OBJ = \
+	wrappers.o
+
+all: libwrap@SUFFIX@.a
+
+.cpp.o:
+	@@CXX@ @OPTS@  -c $^
+	@echo "Compiling $^ ..."
+
+libwrap@SUFFIX@.a:$(OBJ)
+	@@AR@ cr $@ $(OBJ)
+	@echo "Archiving $@ ..."
+
+testapp@SUFFIX@: clean libwrap@SUFFIX@.a test.o
+	@@CXX@ @OPTS@ -Wl,-wrap,malloc -Wl,-wrap,calloc -Wl,-wrap,realloc -Wl,-wrap,free test.o -L. -lwrap@SUFFIX@ -lpthread -o $@
+	@echo "Building  $@ ..."
+
+clean:
+	@rm -f $(OBJ) test.o libwrap@SUFFIX@.a testapp@SUFFIX@
+	@echo "Cleaning..."
+
+.PHONY: all clean
