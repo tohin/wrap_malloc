@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 
 #  The MIT License (MIT)
-#  
+#
 #  Copyright (c) 2013 tohin, belko
-#  
+#
 #  Permission is hereby granted, free of charge, to any person obtaining a copy of
 #  this software and associated documentation files (the "Software"), to deal in
 #  the Software without restriction, including without limitation the rights to
 #  use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
 #  the Software, and to permit persons to whom the Software is furnished to do so,
 #  subject to the following conditions:
-#  
+#
 #  The above copyright notice and this permission notice shall be included in all
 #  copies or substantial portions of the Software.
-#  
+#
 #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
 #  FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -24,11 +24,9 @@
 import struct
 import subprocess
 import os
-import sys
 import argparse
 
 from collections import Counter
-from collections import OrderedDict
 
 import humanize
 
@@ -46,7 +44,7 @@ def addr2line(addr):
         return addrs[addr]
     except:
         value = execute((ADDR2LINE_BIN, '-e', SYM_FILE, '-f', '-C', hex(addr)))
-        value = hex(addr) + ' ' + value.replace('\n',' ') + '\n'
+        value = hex(addr) + ' ' + value.replace('\n', ' ') + '\n'
         addrs[addr] = value
         return value
 
@@ -55,11 +53,11 @@ def execute(exe):
     p = subprocess.Popen(exe, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     result = ''
     while(True):
-      retcode = p.poll() #returns None while subprocess is running
-      line = p.stdout.readline()
-      result += line
-      if(retcode is not None):
-        break
+        retcode = p.poll()  # returns None while subprocess is running
+        line = p.stdout.readline()
+        result += line
+        if(retcode is not None):
+            break
     return result
 
 
@@ -103,25 +101,25 @@ class record():
         if len(self.occurrence) > 0:
             return self.occurrence[-1] * self.size
         else:
-            return 0  
+            return 0
 
     def __str__(self):
-        return "%s: %s at %s, Total %s, Occurrence %s\n %s" % (['[M]','[F]'][self.type-1], humanize.naturalsize(self.size, binary=True), hex(self.pointer), humanize.naturalsize(self.get_total(), binary=True), self.occurrence, ' '.join(self.stack_printable))
+        return "%s: %s at %s, Total %s, Occurrence %s\n %s" % (['[M]', '[F]'][self.type-1], humanize.naturalsize(self.size, binary=True), hex(self.pointer), humanize.naturalsize(self.get_total(), binary=True), self.occurrence, ' '.join(self.stack_printable))
 
     def __eq__(self, other):
-         return self.__hash__() == other.__hash__()
+        return self.__hash__() == other.__hash__()
 
     def __ne__(self, other):
-         return not self.__eq__(other)
+        return not self.__eq__(other)
 
     def __hash__(self):
-        if record.FORCE_STACK_COMPARE:          
+        if record.FORCE_STACK_COMPARE:
             return hash(self.stack)
         else:
             return hash(self.pointer)
 
 
-def parse_and_emulate(data_generator, allocated_records = {}):
+def parse_and_emulate(data_generator, allocated_records={}):
     for chunk in data_generator:
         r = record()
 
@@ -152,7 +150,6 @@ def parse_and_emulate(data_generator, allocated_records = {}):
                 print 'new =', r
                 print ''
 
-
     return allocated_records
 
 
@@ -182,9 +179,9 @@ def main():
     args = parser.parse_args()
 
     SYM_FILE = args.symbol_file
-    
-    if args.arch == 'x86' :
-        ADDR2LINE_BIN = 'addr2line' 
+
+    if args.arch == 'x86':
+        ADDR2LINE_BIN = 'addr2line'
     elif args.arch == 'arm':
         ADDR2LINE_BIN = 'arm-linux-gnueabi-addr2line'
 
@@ -199,7 +196,6 @@ def main():
     file_names = []
     for index in indexes:
         file_names.append('./%s/memory_%d.raw' % (args.log_folder_name, index))
-
 
     # Start emulate
     memory_snapshots = []
@@ -216,11 +212,11 @@ def main():
         memory_snapshot = parse_and_emulate(data_generator, memory_snapshot)
 
         total_mem = 0
-        
+
         for addr in memory_snapshot:
             total_mem += memory_snapshot[addr].size
 
-        print 'EMULATED FILE', count, 'OBJECTS =', len(memory_snapshot), 'TOTAL SIZE =' , "{:,}".format(total_mem), 'Bytes'
+        print 'EMULATED FILE', count, 'OBJECTS =', len(memory_snapshot), 'TOTAL SIZE =', "{:,}".format(total_mem), 'Bytes'
 
         memory_snapshots.append(memory_snapshot)
 
