@@ -220,7 +220,7 @@ def main():
         for addr in memory_snapshot:
             total_mem += memory_snapshot[addr].size
 
-        print 'EMULATED FILE', count, 'OBJECTS =', len(memory_snapshot), 'TOTOAL SIZE =' , "{:,}".format(total_mem), 'Bytes'
+        print 'EMULATED FILE', count, 'OBJECTS =', len(memory_snapshot), 'TOTAL SIZE =' , "{:,}".format(total_mem), 'Bytes'
 
         memory_snapshots.append(memory_snapshot)
 
